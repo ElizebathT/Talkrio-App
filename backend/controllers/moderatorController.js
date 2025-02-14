@@ -2,6 +2,7 @@ const asyncHandler = require('express-async-handler');
 const Report = require('../models/reportModel');
 const Post = require('../models/postModel');
 const Comment = require('../models/commentModel');
+const User = require('../models/userModel');
 
 const moderatorController={
     reviewReports : asyncHandler(async (req, res) => {
@@ -18,6 +19,7 @@ const moderatorController={
     takeActionOnReport : asyncHandler(async (req, res) => {
         const { id, action } = req.body;         
         const report = await Report.findById(id);
+        let userId
         if (!report) {
             throw new Error('Report not found');
         }    
@@ -26,16 +28,30 @@ const moderatorController={
         report.actionTakenAt = new Date();
         await report.save();
         if (action === 'Approved') {
-            // Remove the reported content
             if (report.type === 'Post') {
-                await Post.findByIdAndDelete(report.targetId);
+                const post = await Post.findByIdAndDelete(report.targetId);
+                if (post) userId = post.userId; // Assuming Post schema has userId
             } else if (report.type === 'Comment') {
-                await Comment.findByIdAndDelete(report.targetId);
+                const comment = await Comment.findByIdAndDelete(report.targetId);
+                if (comment) userId = comment.userId; // Assuming Comment schema has userId
             }
-            await Report.findByIdAndDelete(id);
-        }    
-        // Remove the report after action is taken
-        
+
+            await Report.findByIdAndDelete(id); // Remove the report after action is taken
+
+            // If userId exists, increment their report count
+            if (userId) {
+                const user = await User.findById(userId);
+
+                if (user) {
+                    user.reports += 1; // Increment report count
+                    if (user.reports >= 10) {
+                        user.blocked = true; // Block user if they exceed the report limit
+                    }
+                    await user.save(); // Save updated user data
+                }
+            }
+        }
+
         res.send({ message: `Report ${action} successfully` });
     })
 }

@@ -1,6 +1,7 @@
 const Post = require('../models/postModel');
 const Comment = require('../models/commentModel');
 const asyncHandler = require('express-async-handler');
+const User = require('../models/userModel');
 
 const inappropriateWords = [
     "bitch", "hoe", "nigga", "shit", "fuck", "pussy", "dick",
@@ -35,7 +36,15 @@ const commentController={
     
         await comment.save();
         await Post.findByIdAndUpdate(postId, { $push: { comments: comment._id } });
-    
+        await User.findByIdAndUpdate(userId, {
+            $push: {
+                recentActivity: {
+                    postId,
+                    action: "comment",
+                    timestamp: new Date()
+                }
+            }
+        });
         res.send("Comment added successfully");
     }),
 

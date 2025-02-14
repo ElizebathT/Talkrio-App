@@ -6,6 +6,7 @@ const postRoutes = express.Router();
 postRoutes.post("/create", userAuthentication,postController.createPost);
 postRoutes.get("/viewall", userAuthentication,postController.getAllPosts);
 postRoutes.get("/search", userAuthentication,postController.getPostById);
+postRoutes.get("/suggestions", userAuthentication,postController.suggestPosts);
 postRoutes.delete("/delete", userAuthentication,postController.deletePost);
 postRoutes.put("/edit", userAuthentication,postController.updatePost);
 postRoutes.put("/like", userAuthentication,postController.likePost);

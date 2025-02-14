@@ -23,7 +23,18 @@ const UserSchema = new mongoose.Schema({
   blocked:{
     type:Boolean,
     default:false
-  }
+  },
+  reports:{
+    type:Number,
+    default:0
+  },
+  recentActivity: [
+    {
+        postId: mongoose.Schema.Types.ObjectId,
+        action: String, // "like", "comment", "view"
+        timestamp: { type: Date, default: Date.now }
+    }
+]
 });
 
 

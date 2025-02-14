@@ -52,6 +52,31 @@ const psychiatristController={
         });
     }),
 
+    deletePsychiatrist : asyncHandler(async (req, res) => {
+        const { name } = req.body;
+    
+        // Find the psychiatrist
+        const psychiatrist = await Psychiatrist.findOne({name});
+        if (!psychiatrist) {
+            throw new Error("Psychiatrist not found");
+        }
+    
+        // Check if the psychiatrist has any scheduled consultations
+        const hasScheduledConsultations = await Consultation.exists({
+            psychiatristId: psychiatrist._id,
+            status: "Scheduled"
+        });
+    
+        if (hasScheduledConsultations) {
+            throw new Error("Cannot delete psychiatrist with scheduled consultations");
+        }
+    
+        // Delete the psychiatrist
+        await psychiatrist.deleteOne();
+    
+        res.send("Psychiatrist deleted successfully");
+    }),
+
     getPsychiatrists : asyncHandler(async (req, res) => {
     const psychiatrists = await Psychiatrist.find();
     if(!psychiatrists){
@@ -81,6 +106,20 @@ const psychiatristController={
     });
     await consultation.save();
     res.send({ message: "Consultation scheduled successfully", consultation });
+}),
+
+deleteConsultation : asyncHandler(async (req, res) => {
+    const { id } = req.body; 
+    // Find the consultation
+    const consultation = await Consultation.findById(id);
+    if (!consultation) {
+        throw new Error("Consultation not found");
+    }
+
+    // Delete the consultation
+    await consultation.deleteOne();
+
+    res.send("Consultation deleted successfully");
 }),
 
     getConsultationHistory : asyncHandler(async (req, res) => {

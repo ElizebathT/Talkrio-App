@@ -5,6 +5,8 @@ const commentRoutes = require("./commentRouter");
 const reportRoutes = require("./reportRouter");
 const chatRouter = require("./chatRouter");
 const psychiatristRoutes = require("./psychiatristRouter");
+const resourceRoutes = require("./resourceRouter");
+const communityRoutes = require("./communityRouter");
 const router=express()
 
 router.use("/users", userRoutes);
@@ -13,5 +15,7 @@ router.use("/comment", commentRoutes);
 router.use("/report", reportRoutes);
 router.use("/bot", chatRouter);
 router.use("/psychiatrist", psychiatristRoutes);
+router.use("/resource", resourceRoutes);
+router.use("/community", communityRoutes);
 
 module.exports=router
