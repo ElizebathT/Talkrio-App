@@ -28,23 +28,15 @@ const postController={
 }),
 
 suggestPosts :asyncHandler( async (req,res) => {
-    // Get the user's recent activity
     const user = await User.findById(req.user.id).populate("recentActivity.postId");
-
     if (!user || !user.recentActivity || user.recentActivity.length === 0) {
         return res.send("No suggestions"); // No activity, return no suggestions
     }
-    
-
-    // Extract relevant keywords from user's recent activity
     const keywords = user.recentActivity.map(activity => activity.postId.keywords).flat();
-
-    // Find posts with similar keywords, excluding already interacted ones
     const suggestedPosts = await Post.find({
         keywords: { $in: keywords },
         _id: { $nin: user.recentActivity.map(activity => activity.postId._id) }
-    }).limit(10);
-
+    }).limit(10).sort({ createdAt: -1 });
     const postsWithCounts = suggestedPosts.map(post => ({
         _id: post._id,
         userId: post.userId,
@@ -52,16 +44,15 @@ suggestPosts :asyncHandler( async (req,res) => {
         createdAt: post.createdAt,
         likesCount: post.likes ? post.likes.length : 0,  // Handle undefined likes
         commentsCount: post.comments ? post.comments.length : 0,  // Handle undefined comments
-    }));
-    
+    }));    
     res.send(postsWithCounts);
 }),
 
 // Get all posts
-    getAllPosts :asyncHandler(async (req, res) => {
-    const posts = await Post.find();
-    if(!posts){
-        res.send("No posts found")
+getAllPosts: asyncHandler(async (req, res) => {
+    const posts = await Post.find().sort({ createdAt: -1 }); // Sort by createdAt in descending order
+    if (!posts || posts.length === 0) {
+        return res.send("No posts found");
     }
     const postsWithCounts = posts.map(post => ({
         _id: post._id,
