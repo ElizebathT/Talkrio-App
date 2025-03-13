@@ -19,11 +19,10 @@ const communitySchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId, 
             ref: "User" 
         }
-    ], // Users who joined the community
-    createdAt: { 
-        type: Date, 
-        default: Date.now 
-    }
+    ],
+    urls:[{
+        type:String,
+    }]
 });
 
 const Community = mongoose.model("Community", communitySchema);

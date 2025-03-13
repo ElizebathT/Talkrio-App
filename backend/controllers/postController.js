@@ -2,30 +2,47 @@ const Comment = require('../models/commentModel');
 const Post = require('../models/postModel');
 const asyncHandler = require('express-async-handler');
 const User = require('../models/userModel');
+const Notification = require('../models/notificationModel'); // Assuming you have a notification model
 
 const postController={
 // Create a new post
-    createPost : asyncHandler(async (req, res) => {
-    const { content } = req.body;
-    const userId = req.user.id; // Assuming user ID is available in request
+
+createPost: asyncHandler(async (req, res) => {
+    const { content, taggedUsers } = req.body;
+    const userId = req.user.id;
 
     const post = new Post({
         userId,
         content,
+        taggedUsers
     });
-    
+
     await post.save();
+
+    // Save post creation in recent activity
     await User.findByIdAndUpdate(userId, {
         $push: {
             recentActivity: {
-                postId:post._id,
+                postId: post._id,
                 action: "post",
                 timestamp: new Date()
             }
         }
     });
+
+    // Send notifications to tagged users
+    if (taggedUsers && taggedUsers.length > 0) {
+        const notifications = taggedUsers.map(user => ({
+            user: user, 
+            message: `You were tagged in a post.`
+        }));
+
+        await Notification.insertMany(notifications);
+    }
+
     res.send("Post created successfully");
 }),
+
 
 suggestPosts :asyncHandler( async (req,res) => {
     const user = await User.findById(req.user.id).populate("recentActivity.postId");

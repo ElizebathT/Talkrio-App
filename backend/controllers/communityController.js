@@ -4,7 +4,7 @@ const asyncHandler = require('express-async-handler');
 const communityController={
 // Create a new community
     createCommunity : asyncHandler(async (req, res) => {
-    const { name, description, symptomsDiscussed } = req.body;
+    const { name, description, symptomsDiscussed, urls } = req.body;
 
     const communityExists = await Community.findOne({ name });
     if (communityExists) {
@@ -15,7 +15,8 @@ const communityController={
     const community = await Community.create({
         name,
         description,
-        symptomsDiscussed
+        symptomsDiscussed,
+        urls
     });
 
     res.send({ message: "Community created successfully", community });
@@ -71,19 +72,18 @@ const communityController={
     res.send({ message: "Left community successfully", community });
 }),
 
-leaveCommunity : asyncHandler(async (req, res) => {
-    const { name } = req.body;
+    updateCommunityUrls : asyncHandler(async (req, res) => {
+    const { name, urls } = req.body;
     const community = await Community.findOne({ name });
 
     if (!community) {
         throw new Error("Community not found.");
     }
 
-    // Remove user from members list
-    community.members = community.members.filter(member => member.toString() !== req.user.id);
+    community.urls = urls;
     await community.save();
 
-    res.send({ message: "Left community successfully", community });
+    res.send({ message: "Community URLs updated successfully", community });
 }),
 
     deleteCommunity : asyncHandler(async (req, res) => {

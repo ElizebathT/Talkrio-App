@@ -7,6 +7,7 @@ const chatRouter = require("./chatRouter");
 const psychiatristRoutes = require("./psychiatristRouter");
 const resourceRoutes = require("./resourceRouter");
 const communityRoutes = require("./communityRouter");
+const notificationRouter = require("./notificationRouter");
 const router=express()
 
 router.use("/users", userRoutes);
@@ -17,5 +18,6 @@ router.use("/bot", chatRouter);
 router.use("/psychiatrist", psychiatristRoutes);
 router.use("/resource", resourceRoutes);
 router.use("/community", communityRoutes);
+router.use("/notification", notificationRouter);
 
 module.exports=router

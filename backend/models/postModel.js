@@ -27,6 +27,10 @@ const PostSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
+    taggedUsers: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    }],
 });
 
 const Post = mongoose.model('Post', PostSchema);
