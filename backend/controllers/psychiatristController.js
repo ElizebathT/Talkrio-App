@@ -1,6 +1,7 @@
 const Psychiatrist = require("../models/psychiatristModel");
 const Consultation = require("../models/ConsultationModel");
 const asyncHandler = require("express-async-handler");
+const Payment = require("../models/paymentModel");
 
 const psychiatristController={
     addPsychiatrist : asyncHandler(async (req, res) => {
@@ -85,9 +86,42 @@ const psychiatristController={
     res.send(psychiatrists);
 }),
 
-    scheduleConsultation : asyncHandler(async (req, res) => {
+scheduleConsultation: asyncHandler(async (req, res) => {
     const { psychiatristId, date } = req.body;
-    const userId=req.user.id
+    const userId = req.user.id;
+
+    // Check the number of consultations the user has already scheduled
+    const userConsultationCount = await Consultation.countDocuments({
+        userId
+    });
+
+    // Fetch user's active subscription
+    const activeSubscription = await Payment.findOne({ userId, status: "active" });
+
+    let consultationLimit = 1; // Default free tier limit
+
+    if (activeSubscription) {
+        switch (activeSubscription.plan) {
+            case "basic":
+                consultationLimit = 5;
+                break;
+            case "premium":
+                consultationLimit = 10;
+                break;
+            case "vip":
+                consultationLimit = 15;
+                break;
+        }
+    }
+
+    // Restrict consultation booking if limit is reached
+    if (userConsultationCount >= consultationLimit) {
+        return res.status(403).json({
+            message: `You have reached your consultation limit (${consultationLimit}). Please upgrade your plan to book more consultations.`,
+        });
+    }
+
+    // Check if psychiatrist is already booked for the given date
     const existingPsychiatristConsultation = await Consultation.findOne({
         psychiatristId,
         date,
@@ -98,15 +132,18 @@ const psychiatristController={
         throw new Error("The psychiatrist is not available at this time.");
     }
 
+    // Create and save new consultation
     const consultation = new Consultation({
         userId,
         psychiatristId,
         date,
         status: "Scheduled",
     });
+
     await consultation.save();
     res.send({ message: "Consultation scheduled successfully", consultation });
 }),
+
 
 deleteConsultation : asyncHandler(async (req, res) => {
     const { id } = req.body; 

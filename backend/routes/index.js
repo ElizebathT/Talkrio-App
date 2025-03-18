@@ -8,8 +8,12 @@ const psychiatristRoutes = require("./psychiatristRouter");
 const resourceRoutes = require("./resourceRouter");
 const communityRoutes = require("./communityRouter");
 const notificationRouter = require("./notificationRouter");
+const paymentRouter = require("./paymentRouter");
 const router=express()
 
+router.use("/payment", paymentRouter);
+
+router.use(express.json())
 router.use("/users", userRoutes);
 router.use("/post", postRoutes);
 router.use("/comment", commentRoutes);

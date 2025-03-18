@@ -10,11 +10,31 @@ const postController={
 createPost: asyncHandler(async (req, res) => {
     const { content, taggedUsers } = req.body;
     const userId = req.user.id;
+    const imageUrls = req.files.map((file) => file.path);
+
+    let taggedUsersArray = [];
+
+    // Handle different formats of `taggedUsers`
+    if (Array.isArray(taggedUsers)) {
+        taggedUsersArray = taggedUsers;
+    } else if (typeof taggedUsers === "string") {
+        try {
+            // If JSON parse fails, check if it's a comma-separated string
+            taggedUsersArray = JSON.parse(taggedUsers);
+            if (!Array.isArray(taggedUsersArray)) {
+                throw new Error("Parsed value is not an array");
+            }
+        } catch (error) {
+            console.warn("JSON.parse failed, trying comma-separated format...");
+            taggedUsersArray = taggedUsers.split(",").map(user => user.trim());
+        }
+    }
 
     const post = new Post({
         userId,
         content,
-        taggedUsers
+        images: imageUrls,
+        taggedUsers: taggedUsersArray
     });
 
     await post.save();
@@ -31,9 +51,9 @@ createPost: asyncHandler(async (req, res) => {
     });
 
     // Send notifications to tagged users
-    if (taggedUsers && taggedUsers.length > 0) {
-        const notifications = taggedUsers.map(user => ({
-            user: user, 
+    if (taggedUsersArray.length > 0) {
+        const notifications = taggedUsersArray.map(user => ({
+            user,
             message: `You were tagged in a post.`
         }));
 
@@ -42,7 +62,6 @@ createPost: asyncHandler(async (req, res) => {
 
     res.send("Post created successfully");
 }),
-
 
 suggestPosts :asyncHandler( async (req,res) => {
     const user = await User.findById(req.user.id).populate("recentActivity.postId");
