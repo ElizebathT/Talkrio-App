@@ -6,14 +6,18 @@ const connectDB = require("./database/connectDB");
 const cookieParser = require("cookie-parser")
 const errorHandler = require("./middlewares/errorHandler")
 const router = require("./routes");
+const session=require('express-session')
+const http = require("http");
+const { Server } = require("socket.io");
+const { initializeSocket } = require("./socket");
 
 const app = express();
 connectDB()
-app.use(express.json());
+const server = http.createServer(app);
 app.use(cookieParser())
 
 app.use(router)
-
+initializeSocket(server);
 app.use(cors());
 app.use(errorHandler)
 
