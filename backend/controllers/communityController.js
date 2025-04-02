@@ -31,8 +31,8 @@ const communityController={
 }),
 
     getCommunityById : asyncHandler(async (req, res) => {
-        const {name}=req.body
-    const community = await Community.findOne({name});
+        const {id}=req.body
+    const community = await Community.findById(id).populate("members");
     if (!community) {
         throw new Error("Community not found.");
     }

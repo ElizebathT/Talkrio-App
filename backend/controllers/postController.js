@@ -7,7 +7,7 @@ const Notification = require('../models/notificationModel'); // Assuming you hav
 const postController={
 // Create a new post
 
-createPost: asyncHandler(async (req, res) => {
+   createPost: asyncHandler(async (req, res) => {
     const { content, taggedUsers } = req.body;
     const userId = req.user.id;
     const imageUrls = req.files.map((file) => file.path);

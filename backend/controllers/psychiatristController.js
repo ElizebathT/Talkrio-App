@@ -3,7 +3,7 @@ const Consultation = require("../models/ConsultationModel");
 const asyncHandler = require("express-async-handler");
 const Payment = require("../models/paymentModel");
 
-const psychiatristController={
+const psychiatristController={ 
     addPsychiatrist : asyncHandler(async (req, res) => {
         const { name, specialization, availability, contact } = req.body;
         const existingPsychiatrist = await Psychiatrist.findOne({ name, specialization });
@@ -11,6 +11,7 @@ const psychiatristController={
             throw new Error("Psychiatrist already exists");
         }
         const psychiatrist = new Psychiatrist({
+            user:req.user.id,
             name,
             specialization,
             availability, // Example: ["Monday 9AM-12PM", "Wednesday 2PM-5PM"]
@@ -25,7 +26,7 @@ const psychiatristController={
 
     editPsychiatrist : asyncHandler(async (req, res) => {
         const { name, specialization, availability, contact } = req.body;    
-        const psychiatrist = await Psychiatrist.findOne({name});
+        const psychiatrist = await Psychiatrist.findOne({user:req.user.id});
         if (!psychiatrist) {
             throw new Error("Psychiatrist not found");
         }

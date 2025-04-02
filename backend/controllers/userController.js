@@ -21,6 +21,9 @@ const userController={
       if(!userCreated){
           throw new Error("User creation failed")
       }
+      if(role==="psychiatrist"){
+        userCreated.verified=false
+      }
       const payload={
           email:userCreated.email,
           id:userCreated.id
@@ -40,6 +43,9 @@ const userController={
         const userExist=await User.findOne({email})
         if(!userExist){
             throw new Error("User not found")
+        }
+        if(!userExist.verified){
+            throw new Error("User not verified")
         }
         const passwordMatch= bcrypt.compare(userExist.password,password)
         if(!passwordMatch){
